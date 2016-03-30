@@ -3,9 +3,9 @@ package com.chancorp.rne_analyzer;
 /**
  * Created by Chan on 3/28/2016.
  */
-public class Pixel {
-    float r,g,b;
-    public Pixel(float r, float g, float b){
+public class Pixel implements Printable {
+    double r,g,b;
+    public Pixel(double r, double g, double b){
         this.r=r;
         this.g=g;
         this.b=b;
@@ -25,16 +25,16 @@ public class Pixel {
         this.g=toLinear(g);
         this.b=toLinear(b);
     }
-    private float toGamma(float val){
-        if (val<0.0031308) return (float)Math.pow(12.92,val);
-        else return 1.055f*(float)Math.pow(val,(1/2.4))-0.055f;
+    private double toGamma(double val){
+        if (val<0.0031308) return Math.pow(12.92,val);
+        else return 1.055f*Math.pow(val,(1/2.4))-0.055f;
 
     }
-    private float toLinear(float val){
+    private double toLinear(double val){
         if (val<=0.04045) return val/12.92f;
-        else return (float)Math.pow(((val+0.055)/1.055),2.4);
+        else return Math.pow(((val+0.055)/1.055),2.4);
     }
-    public Pixel add(float r, float g,float b){
+    public Pixel add(double r, double g,double b){
         return new Pixel(this.r+r,this.b+b,this.g+g);
         /*
         this.r+=r;
@@ -48,7 +48,7 @@ public class Pixel {
         this.g+=p.g;
         this.b+=p.b;*/
     }
-    public Pixel div(float n){
+    public Pixel div(double n){
         return new Pixel(this.r/n,this.b/n,this.g/n);
         /*
         this.r/=n;
@@ -62,11 +62,14 @@ public class Pixel {
         this.g-=p.g;
         this.b-=p.b;*/
     }
-    public String toFileRepr(){
-        return ""+this.r+"\t"+this.g+"\t"+this.b;
+
+    public double avg(){
+        return (r+g+b)/3.0;
     }
-    public float avg(){
-        return (r+g+b)/3.0f;
+
+    @Override
+    public String debugPrint() {
+        return ""+this.r+"\t"+this.g+"\t"+this.b;
     }
 
 }

@@ -25,7 +25,7 @@ public class PixelOperations {
                 b+=Color.blue(clr);
             }
 
-            pixels[y]=new Pixel((float)(r/w),(float)(g/w),(float)(b/w));
+            pixels[y]=new Pixel((r/w),(g/w),(b/w));
         }
         bmp=null;
         return pixels;
@@ -47,6 +47,7 @@ public class PixelOperations {
                 if(j<0 || j>=px.length) continue;
                 else{
                     current=current.add(px[j]);
+                    num+=1;
                 }
             }
             res[i]=current.div(num);

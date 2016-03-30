@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Create an instance of Camera
         mCamera = getCameraInstance();
         Camera.Parameters params=mCamera.getParameters();
-        params.setPictureSize(500,500);
-        params.setPreviewSize(500,500);
+        params.setPictureSize(1280,720);
+        params.setPreviewSize(1280,720);
         mCamera.setParameters(params);
 
         fab.setOnClickListener(this);
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @Override
-    public void onClick(View v) {
+      public void onClick(View v) {
         // get an image from the camera
         mCamera.takePicture(null, new Camera.PictureCallback() {
             @Override
@@ -93,10 +93,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
+                Log2.log(1,this,"Picture Received!");
                 if (data == null) Toast.makeText(MainActivity.this, "JPEG NULL!", Toast.LENGTH_SHORT).show();
                 else Toast.makeText(MainActivity.this, "JPEG Length: " + data.length, Toast.LENGTH_SHORT).show();
-                Analyzer a=new Analyzer(BitmapFactory.decodeByteArray(data, 0, data.length));
-                a.analyze();
+                Analyzer a=new Analyzer(BitmapFactory.decodeByteArray(data, 0, data.length),getApplicationContext());
+                Log2.log(1,this,"Analyzer Created!");
+                a.prepareData();
+                a.logData();
+                a.peakAnalyze(DataOperations.BLUE);
             }
         });
     }
