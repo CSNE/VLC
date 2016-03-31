@@ -1,16 +1,11 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.helper;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.util.List;
 
 /**
  * Created by Chan on 3/30/2016.
@@ -24,7 +19,7 @@ public class WriteHelper {
             FileOutputStream out = new FileOutputStream(file);
             final PrintStream printStream = new PrintStream(out);
             for (int i = 0; i < dat.length; i++) {
-                printStream.println(""+i+"\t"+dat[i].debugPrint());
+                printStream.print(""+i+"\t"+dat[i].debugPrint());
             }
             printStream.flush();
             printStream.close();

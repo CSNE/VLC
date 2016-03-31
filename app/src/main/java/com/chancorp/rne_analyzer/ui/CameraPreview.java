@@ -1,4 +1,4 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.ui;
 
 import android.content.Context;
 import android.hardware.Camera;

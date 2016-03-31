@@ -1,4 +1,4 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.helper;
 
 /**
  * Created by Chan on 3/30/2016.

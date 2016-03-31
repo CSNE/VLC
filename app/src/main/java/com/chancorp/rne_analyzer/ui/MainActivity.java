@@ -1,4 +1,4 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.ui;
 
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
@@ -12,11 +12,26 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.chancorp.rne_analyzer.data.Block;
+import com.chancorp.rne_analyzer.data.BlockArray;
+import com.chancorp.rne_analyzer.analyzer.DataOperations;
+import com.chancorp.rne_analyzer.analyzer.ImageAnalyzer;
+import com.chancorp.rne_analyzer.data.PeakBlock;
+import com.chancorp.rne_analyzer.helper.Log2;
+import com.chancorp.rne_analyzer.data.Peak;
+import com.chancorp.rne_analyzer.analyzer.PeakAnalyzer;
+import com.chancorp.rne_analyzer.R;
+import com.chancorp.rne_analyzer.helper.TimeSpaceConversions;
+
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     /** A safe way to get an instance of the Camera object. */
 
     CameraPreview mPreview;
     Camera mCamera;
+
+    BlockArray ba=new BlockArray();
 
 
     public static Camera getCameraInstance(){
@@ -93,14 +108,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                Log2.log(1,this,"Picture Received!");
+                Log2.log(1, this, "Picture Received!");
                 if (data == null) Toast.makeText(MainActivity.this, "JPEG NULL!", Toast.LENGTH_SHORT).show();
                 else Toast.makeText(MainActivity.this, "JPEG Length: " + data.length, Toast.LENGTH_SHORT).show();
-                Analyzer a=new Analyzer(BitmapFactory.decodeByteArray(data, 0, data.length),getApplicationContext());
-                Log2.log(1,this,"Analyzer Created!");
-                a.prepareData();
-                a.logData();
-                a.peakAnalyze(DataOperations.BLUE);
+
+                ImageAnalyzer ia=new ImageAnalyzer(BitmapFactory.decodeByteArray(data, 0, data.length),getApplicationContext());
+                ia.prepareData();
+                ia.logData();
+                List<Peak> peaks=ia.peakAnalyze(DataOperations.BLUE);
+
+                PeakAnalyzer pa=new PeakAnalyzer(peaks,getApplicationContext());
+                pa.group();
+                pa.seperateBlocks(TimeSpaceConversions.millisecToPixels(2.0));
+                PeakBlock peakBlock=pa.trim();
+
+                peakBlock.verifySymmetry();
+                boolean[] dat= peakBlock.getData();
+
+                Block block=new Block(dat);
+                block.verify();
+
+                ba.add(block);
             }
         });
     }

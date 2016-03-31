@@ -1,4 +1,6 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.analyzer;
+
+import com.chancorp.rne_analyzer.data.Pixel;
 
 /**
  * Created by Chan on 3/30/2016.

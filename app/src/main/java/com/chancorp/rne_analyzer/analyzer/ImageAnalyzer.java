@@ -1,25 +1,28 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.analyzer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.provider.ContactsContract;
 
-import java.lang.reflect.Array;
+import com.chancorp.rne_analyzer.data.Peak;
+import com.chancorp.rne_analyzer.data.Pixel;
+import com.chancorp.rne_analyzer.helper.WriteHelper;
+import com.chancorp.rne_analyzer.helper.Log2;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
-/**
- * Created by Chan on 3/30/2016.
- */
-public class Analyzer {
+//Receives a Bitmap and makes a list of peaks.
+public class ImageAnalyzer {
     Pixel[] averaged, gCorrected, lowPassed, derivative, derivativeLowpass, derivativeLowpassSubtracted;
     Context c;
 
-    public Analyzer(Bitmap bmp, Context c){
-        Log2.log(1,this,"Analyzer Created: w="+bmp.getWidth()+", h="+bmp.getHeight());
-        averaged=PixelOperations.feedData(bmp);
+    public ImageAnalyzer(Bitmap bmp, Context c){
+        Log2.log(1, this, "ImageAnalyzer Created: w=" + bmp.getWidth() + ", h=" + bmp.getHeight());
+        averaged= PixelOperations.feedData(bmp);
         this.c=c;
     }
+
     public void prepareData(){
         Log2.log(1,this,"Prepping data...");
         gCorrected=PixelOperations.transformColorSpace(averaged);
@@ -45,7 +48,7 @@ public class Analyzer {
     }
 
 
-    public void peakAnalyze(int type){
+    public List<Peak> peakAnalyze(int type){
         Log2.log(1,this,"Starting Peak Analysis...");
         double[] dat=DataOperations.fromPixels(derivativeLowpassSubtracted,type);
         double stdDeviation=DataOperations.stdDeviation(dat);
@@ -55,14 +58,16 @@ public class Analyzer {
         for (int i = 1; i < dat.length; i++) {
             if (!rising && dat[i]-dat[i-1]>=0){
                 rising=true;
-                peakCandidates.add(new Peak(Peak.RISING,i-1,dat[i-1]));
+                peakCandidates.add(new Peak(Peak.LOWER,i-1,dat[i-1]));
             }else if (rising && dat[i]-dat[i-1]<0){
                 rising=false;
-                peakCandidates.add(new Peak(Peak.FALLING,i-1,dat[i-1]));
+                peakCandidates.add(new Peak(Peak.UPPER,i-1,dat[i-1]));
             }
         }
 
         WriteHelper.writeToFile(peakCandidates.toArray(new Peak[peakCandidates.size()]), c, "a1_PeakCandidates");
+
+
         double zeroThreshold=stdDeviation*1.5;
         for (Iterator<Peak> iterator = peakCandidates.iterator(); iterator.hasNext();) {
             Peak p = iterator.next();
@@ -85,7 +90,9 @@ public class Analyzer {
             }
         }
 
-        WriteHelper.writeToFile(peakCandidates.toArray(new Peak[peakCandidates.size()]), c, "a3_Validate_Close");
+        WriteHelper.writeToFile(peakCandidates.toArray(new Peak[peakCandidates.size()]), c, "a3_Validate_Close(FinalPeaks)");
         Log2.log(1, this, "Peak Analysis Done.");
+
+        return peakCandidates;
     }
 }

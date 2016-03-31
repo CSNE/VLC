@@ -1,4 +1,4 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.helper;
 
 
 import android.util.Log;

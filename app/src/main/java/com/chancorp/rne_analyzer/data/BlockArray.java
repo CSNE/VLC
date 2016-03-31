@@ -1,4 +1,4 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.data;
 
 import java.util.ArrayList;
 

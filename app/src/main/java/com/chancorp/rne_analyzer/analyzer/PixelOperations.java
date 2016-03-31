@@ -1,7 +1,9 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.analyzer;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+
+import com.chancorp.rne_analyzer.data.Pixel;
 
 
 public class PixelOperations {

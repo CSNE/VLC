@@ -1,10 +1,12 @@
-package com.chancorp.rne_analyzer;
+package com.chancorp.rne_analyzer.data;
+
+import com.chancorp.rne_analyzer.helper.Printable;
 
 /**
  * Created by Chan on 3/28/2016.
  */
 public class Pixel implements Printable {
-    double r,g,b;
+    public double r,g,b;
     public Pixel(double r, double g, double b){
         this.r=r;
         this.g=g;
@@ -69,7 +71,7 @@ public class Pixel implements Printable {
 
     @Override
     public String debugPrint() {
-        return ""+this.r+"\t"+this.g+"\t"+this.b;
+        return ""+this.r+"\t"+this.g+"\t"+this.b+"\n";
     }
 
 }
