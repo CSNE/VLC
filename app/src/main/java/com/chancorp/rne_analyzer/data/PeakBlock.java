@@ -1,8 +1,13 @@
 package com.chancorp.rne_analyzer.data;
 
+import com.chancorp.rne_analyzer.analyzer.DataOperations;
+import com.chancorp.rne_analyzer.helper.Log2;
 import com.chancorp.rne_analyzer.helper.Printable;
+import com.chancorp.rne_analyzer.helper.WriteHelper;
+import com.chancorp.rne_analyzer.helper.WritePrinter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Chan on 3/31/2016.
@@ -26,18 +31,26 @@ public class PeakBlock implements Printable {
         return true;
     }
 
-    public boolean[] getData(){
-        ArrayList<boolean[]> dat=new ArrayList<>();
+    public List<Boolean> getData(int bitsPerGroup, double bitSpacing, int colorCode){
+        WritePrinter wp=new WritePrinter();
+        Log2.log(1,this,"GetData called...");
+        ArrayList<Boolean> dat=new ArrayList<>();
+
         for (int i = 0; i < groups.size(); i++) {
-            dat.add(groups.get(i).parseData());
+            dat.addAll(groups.get(i).getData(bitsPerGroup,bitSpacing,wp));
         }
 
-        boolean[] res=new boolean[];
-        for (int i = 0; i < dat.size(); i++) {
-
+        int n=0;
+        while (dat.size()%8!=0){
+            n++;
+            dat.remove(dat.size()-1);
         }
 
-        return res;
+        Log2.log(2,this,"Removed "+n+" trailing bits.");
+
+        WriteHelper.writeToFile(wp,"d1_"+ DataOperations.colorCode(colorCode)+"_Data_Acquisition");
+
+        return dat;
     }
 
     @Override

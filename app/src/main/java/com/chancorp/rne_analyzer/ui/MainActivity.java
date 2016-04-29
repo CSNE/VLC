@@ -1,31 +1,32 @@
 package com.chancorp.rne_analyzer.ui;
 
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chancorp.rne_analyzer.data.Block;
+import com.chancorp.rne_analyzer.analyzer.MasterAnalyzer;
+import com.chancorp.rne_analyzer.data.Bits;
 import com.chancorp.rne_analyzer.data.BlockArray;
-import com.chancorp.rne_analyzer.analyzer.DataOperations;
-import com.chancorp.rne_analyzer.analyzer.ImageAnalyzer;
-import com.chancorp.rne_analyzer.data.PeakBlock;
+import com.chancorp.rne_analyzer.helper.ErrorLogger;
 import com.chancorp.rne_analyzer.helper.Log2;
-import com.chancorp.rne_analyzer.data.Peak;
-import com.chancorp.rne_analyzer.analyzer.PeakAnalyzer;
 import com.chancorp.rne_analyzer.R;
-import com.chancorp.rne_analyzer.helper.TimeSpaceConversions;
+import com.chancorp.rne_analyzer.helper.WriteHelper;
 
-import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, WriteHelper.AsyncListener{
     /** A safe way to get an instance of the Camera object. */
 
     CameraPreview mPreview;
@@ -33,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     BlockArray ba=new BlockArray();
 
+    File captured, reference;
+
+    TextView binary, utf8,writing;
 
     public static Camera getCameraInstance(){
         Camera c = null;
@@ -46,17 +50,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log2.log(2,this,"NEW INSTANCE!");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.content_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        Button fab = (Button) findViewById(R.id.cap_btn);
         // Create an instance of Camera
         mCamera = getCameraInstance();
         Camera.Parameters params=mCamera.getParameters();
-        params.setPictureSize(1280,720);
-        params.setPreviewSize(1280,720);
+        params.setPictureSize(3264,2448);
+        params.setPreviewSize(640,480);
         mCamera.setParameters(params);
 
         fab.setOnClickListener(this);
@@ -64,6 +71,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.frame);
         preview.addView(mPreview);
+
+        captured =new File(Environment.getExternalStorageDirectory(),"CAP.jpeg");
+        reference =new File(Environment.getExternalStorageDirectory(),"REF.jpg");
+
+        binary=(TextView) findViewById(R.id.textView2);
+        utf8=(TextView) findViewById(R.id.textView);
+        writing=(TextView)findViewById(R.id.textView3);
+
+        WriteHelper.setAsyncListener(this);
     }
 
     @Override
@@ -83,9 +99,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if (id == R.id.db_1) {
+            startAsyncAnalysis(captured);
+        }else if (id == R.id.db_2) {
+            startAsyncAnalysis(reference);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startAsyncAnalysis(File f){
+        final File f_=f;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                display(MasterAnalyzer.analyze(f_));
+            }
+        }).start();
+    }
+
+    private void display(Bits data){
+        final Bits data_=data;
+        binary.post(new Runnable() {
+            @Override
+            public void run() {
+                binary.setText(data_.toSplitString());
+                utf8.setText(data_.decodeString());
+            }
+        });
+
     }
 
     @Override
@@ -99,36 +141,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
       public void onClick(View v) {
         // get an image from the camera
-        mCamera.takePicture(null, new Camera.PictureCallback() {
+        mCamera.takePicture(null, new Camera.PictureCallback() {  //Raw Data
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 if (data == null) Toast.makeText(MainActivity.this, "NULL!", Toast.LENGTH_SHORT).show();
                 else Toast.makeText(MainActivity.this, "Length: " + data.length, Toast.LENGTH_SHORT).show();
             }
-        }, null, new Camera.PictureCallback() {
+        }, null, new Camera.PictureCallback() { //JPEG data
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 Log2.log(1, this, "Picture Received!");
-                if (data == null) Toast.makeText(MainActivity.this, "JPEG NULL!", Toast.LENGTH_SHORT).show();
-                else Toast.makeText(MainActivity.this, "JPEG Length: " + data.length, Toast.LENGTH_SHORT).show();
 
-                ImageAnalyzer ia=new ImageAnalyzer(BitmapFactory.decodeByteArray(data, 0, data.length),getApplicationContext());
-                ia.prepareData();
-                ia.logData();
-                List<Peak> peaks=ia.peakAnalyze(DataOperations.BLUE);
+                try {
 
-                PeakAnalyzer pa=new PeakAnalyzer(peaks,getApplicationContext());
-                pa.group();
-                pa.seperateBlocks(TimeSpaceConversions.millisecToPixels(2.0));
-                PeakBlock peakBlock=pa.trim();
+                    FileOutputStream fos = new FileOutputStream(captured);
+                    fos.write(data);
+                    fos.close();
+                } catch (Exception e) {
+                    ErrorLogger.log(e);
+                }
+                Log2.log(1, this, "Picture Saved!");
 
-                peakBlock.verifySymmetry();
-                boolean[] dat= peakBlock.getData();
+                startAsyncAnalysis(captured);
+            }
+        });
+    }
 
-                Block block=new Block(dat);
-                block.verify();
 
-                ba.add(block);
+    @Override
+    public void asyncStarted() {
+        writing.post(new Runnable() {
+            @Override
+            public void run() {
+                writing.setText("Writing...");
+            }
+        });
+    }
+
+    @Override
+    public void asyncEnded() {
+        writing.post(new Runnable() {
+            @Override
+            public void run() {
+                writing.setText("Write Complete.");
             }
         });
     }

@@ -24,4 +24,8 @@ public class Peak implements Printable {
         return ""+type+"\t"+coordinate+"\t"+value+"\n";
     }
 
+    @Override
+    public String toString(){
+        return debugPrint();
+    }
 }

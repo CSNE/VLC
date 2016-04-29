@@ -7,4 +7,6 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+    <item android:id="@+id/db_1" android:title="Load Last"/>
+    <item android:id="@+id/db_2" android:title="Load Reference Image"/>
 </menu>

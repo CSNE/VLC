@@ -5,4 +5,5 @@ package com.chancorp.rne_analyzer.helper;
  */
 public interface Printable {
     String debugPrint();
+
 }

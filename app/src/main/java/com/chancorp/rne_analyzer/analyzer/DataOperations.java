@@ -35,4 +35,40 @@ public class DataOperations {
         }
         return Math.sqrt(varianceSum/dat.length);
     }
+    public static String colorCode(int type){
+        if (type==RED) return "R";
+        else if (type==GREEN) return "G";
+        else if (type==BLUE) return "B";
+        else if (type==AVERAGE) return "AVG";
+        else return "?";
+    }
+    public static double stdDeviation(double[] dat, int from, int to){
+        double avg=average(dat);
+        double varianceSum=0;
+        for (int i = from; i <= to; i++) {
+            varianceSum+=Math.pow(avg - dat[i], 2);
+        }
+        return Math.sqrt(varianceSum/dat.length);
+    }
+    public static double[] localizedStdDeviation(double[] dat, int size){
+        double[] res=new double[dat.length];
+        int start, end;
+        for (int i = 0; i < res.length; i++) {
+            start=i-size;
+            if (start<0) start=0;
+
+            end=i+size;
+            if (end>=dat.length) end=dat.length-1;
+
+            res[i]=stdDeviation(dat,start,end);
+        }
+        return res;
+    }
+    public static double[] multiply(double[] dat, double factor){
+        double[] res=new double[dat.length];
+        for (int i = 0; i < res.length; i++) {
+            res[i]=dat[i]*factor;
+        }
+        return res;
+    }
 }

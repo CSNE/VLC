@@ -17,63 +17,71 @@ public class PeakAnalyzer {
     List<Peak> peaks;
     List<PeakGroup> groups;
     List<PeakBlock> blocks;
-    Context c;
 
-    public PeakAnalyzer(List<Peak> peaks, Context c){
-        this.peaks=peaks;
-        this.c=c;
+    int colorCode;
+
+
+    public PeakAnalyzer(List<Peak> peaks, int colorCode) {
+        this.peaks = peaks;
+        this.colorCode=colorCode;
     }
-    public void group(){
+
+    public void group() {
         Log2.log(1, this, "Grouping Peaks...");
-        groups=new ArrayList<>();
-        PeakGroup peakGroup =null;
-        for (int i = 0; i < peaks.size()-1; i++) {
-            if (peakGroup ==null) peakGroup =new PeakGroup();
-            
+        groups = new ArrayList<>();
+        PeakGroup peakGroup = null;
+        for (int i = 0; i < peaks.size(); i++) {
+            if (peakGroup == null) peakGroup = new PeakGroup();
+
             peakGroup.addPeak(peaks.get(i));
-            
-            if (peaks.get(i+1).type==Peak.LOWER && peaks.get(i).type==Peak.UPPER){
+
+            if (i==peaks.size()-1 || (peaks.get(i + 1).type == Peak.UPPER && peaks.get(i).type == Peak.LOWER)) {
                 groups.add(peakGroup);
-                peakGroup =null;
+                peakGroup = null;
             }
+
         }
-        WriteHelper.writeToFile(groups.toArray(new PeakGroup[groups.size()]),c,"p1_Grouped");
+
+
+        WriteHelper.writeToFile(groups.toArray(new PeakGroup[groups.size()]), "p1_"+DataOperations.colorCode(colorCode)+"_Grouped");
     }
 
-    public void seperateBlocks(double blockDelayThresholdInPixels){
+    public void seperateBlocks(double blockDelayThresholdInPixels) {
         Log2.log(1, this, "Seperating Blocks...");
-        blocks=new ArrayList<>();
-        PeakBlock peakBlock=null;
+        blocks = new ArrayList<>();
+        PeakBlock peakBlock = null;
 
-        for (int i = 0; i < groups.size()-1; i++) {
-            if (peakBlock ==null) peakBlock =new PeakBlock();
+        for (int i = 0; i < groups.size(); i++) {
+            if (peakBlock == null) peakBlock = new PeakBlock();
 
             peakBlock.addPeakGroup(groups.get(i));
 
-            if ((groups.get(i+1).getStartPixel()-groups.get(i).getEndPixel())>blockDelayThresholdInPixels){
+            if (i==groups.size()-1 || ((groups.get(i + 1).getStartPixel() - groups.get(i).getEndPixel()) > blockDelayThresholdInPixels)) {
                 blocks.add(peakBlock);
-                peakBlock =null;
+                peakBlock = null;
             }
         }
-        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]),c,"p2_Blocks");
+
+        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]), "p2_"+DataOperations.colorCode(colorCode)+"_Blocks");
     }
 
-    public PeakBlock trim(){
-        int maxBlockSize=0;
-        for (PeakBlock pb : blocks){
-            if (pb.getBlockSize()>maxBlockSize) maxBlockSize=pb.getBlockSize();
+    public PeakBlock trim() {
+        Log2.log(1, this, "Trimming...");
+        int maxBlockSize = 0;
+        for (PeakBlock pb : blocks) {
+            if (pb.getBlockSize() > maxBlockSize) maxBlockSize = pb.getBlockSize();
         }
 
 
-        for (Iterator<PeakBlock> iterator = blocks.iterator(); iterator.hasNext();) {
+        for (Iterator<PeakBlock> iterator = blocks.iterator(); iterator.hasNext(); ) {
             PeakBlock pb = iterator.next();
-            if (pb.getBlockSize()<maxBlockSize) {
+            if (pb.getBlockSize() < maxBlockSize) {
                 // Remove the current element from the iterator and the list.
                 iterator.remove();
             }
         }
 
-        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]),c,"p3_ValidBlocks");
+        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]), "p3_"+DataOperations.colorCode(colorCode)+"_ValidBlocks");
         return blocks.get(0);
 
     }

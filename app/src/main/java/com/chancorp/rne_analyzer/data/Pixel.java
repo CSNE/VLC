@@ -7,6 +7,10 @@ import com.chancorp.rne_analyzer.helper.Printable;
  */
 public class Pixel implements Printable {
     public double r,g,b;
+
+    public Pixel(Pixel p){
+        this(p.r,p.g,p.b);
+    }
     public Pixel(double r, double g, double b){
         this.r=r;
         this.g=g;
@@ -17,22 +21,19 @@ public class Pixel implements Printable {
         this.g=0;
         this.b=0;
     }
-    public void toGamma(){
-        this.r=toGamma(r);
-        this.g=toGamma(g);
-        this.b=toGamma(b);
+    public Pixel toGamma(){
+        return new Pixel(toGamma(r),toGamma(g),toGamma(b));
+
     }
-    public void toLinear(){
-        this.r=toLinear(r);
-        this.g=toLinear(g);
-        this.b=toLinear(b);
+    public Pixel toLinear(){
+        return new Pixel(toLinear(r),toLinear(g),toLinear(b));
     }
-    private double toGamma(double val){
+    private static double toGamma(double val){
         if (val<0.0031308) return Math.pow(12.92,val);
         else return 1.055f*Math.pow(val,(1/2.4))-0.055f;
 
     }
-    private double toLinear(double val){
+    private static double toLinear(double val){
         if (val<=0.04045) return val/12.92f;
         else return Math.pow(((val+0.055)/1.055),2.4);
     }
@@ -44,21 +45,21 @@ public class Pixel implements Printable {
         this.b+=b;*/
     }
     public Pixel add(Pixel p){
-        return new Pixel(this.r+p.r,this.b+p.b,this.g+p.g);
+        return new Pixel(this.r+p.r,this.g+p.g,this.b+p.b);
         /*
         this.r+=p.r;
         this.g+=p.g;
         this.b+=p.b;*/
     }
     public Pixel div(double n){
-        return new Pixel(this.r/n,this.b/n,this.g/n);
+        return new Pixel(this.r/n,this.g/n,this.b/n);
         /*
         this.r/=n;
         this.g/=n;
         this.b/=n;*/
     }
     public Pixel sub(Pixel p){
-        return new Pixel(this.r-p.r,this.b-p.b,this.g-p.g);
+        return new Pixel(this.r-p.r,this.g-p.g,this.b-p.b);
         /*
         this.r-=p.r;
         this.g-=p.g;
