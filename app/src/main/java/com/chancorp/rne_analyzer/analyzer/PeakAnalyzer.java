@@ -1,7 +1,5 @@
 package com.chancorp.rne_analyzer.analyzer;
 
-import android.content.Context;
-
 import com.chancorp.rne_analyzer.data.PeakBlock;
 import com.chancorp.rne_analyzer.data.PeakGroup;
 import com.chancorp.rne_analyzer.data.Peak;
@@ -43,7 +41,7 @@ public class PeakAnalyzer {
         }
 
 
-        WriteHelper.writeToFile(groups.toArray(new PeakGroup[groups.size()]), "p1_"+DataOperations.colorCode(colorCode)+"_Grouped");
+        WriteHelper.writeToFileAsync(groups.toArray(new PeakGroup[groups.size()]), "p1_"+DataOperations.colorCode(colorCode)+"_Grouped");
     }
 
     public void seperateBlocks(double blockDelayThresholdInPixels) {
@@ -62,7 +60,7 @@ public class PeakAnalyzer {
             }
         }
 
-        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]), "p2_"+DataOperations.colorCode(colorCode)+"_Blocks");
+        WriteHelper.writeToFileAsync(blocks.toArray(new PeakBlock[blocks.size()]), "p2_"+DataOperations.colorCode(colorCode)+"_Blocks");
     }
 
     public PeakBlock trim() {
@@ -81,7 +79,7 @@ public class PeakAnalyzer {
             }
         }
 
-        WriteHelper.writeToFile(blocks.toArray(new PeakBlock[blocks.size()]), "p3_"+DataOperations.colorCode(colorCode)+"_ValidBlocks");
+        WriteHelper.writeToFileAsync(blocks.toArray(new PeakBlock[blocks.size()]), "p3_"+DataOperations.colorCode(colorCode)+"_ValidBlocks");
         return blocks.get(0);
 
     }

@@ -44,6 +44,11 @@ public class Pixel implements Printable {
         this.g+=g;
         this.b+=b;*/
     }
+    public void addSelf(Pixel p){
+        this.r+=p.r;
+        this.g+=p.g;
+        this.b+=p.b;
+    }
     public Pixel add(Pixel p){
         return new Pixel(this.r+p.r,this.g+p.g,this.b+p.b);
         /*
@@ -64,6 +69,11 @@ public class Pixel implements Printable {
         this.r-=p.r;
         this.g-=p.g;
         this.b-=p.b;*/
+    }
+    public void subSelf(Pixel p){
+        this.r-=p.r;
+        this.g-=p.g;
+        this.b-=p.b;
     }
 
     public double avg(){

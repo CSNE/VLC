@@ -1,11 +1,9 @@
 package com.chancorp.rne_analyzer.helper;
 
-import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 
 /**
@@ -32,6 +30,13 @@ public class WriteHelper {
         asyncCount--;
         if (asyncCount==0) al.asyncEnded();
     }
+
+
+    static boolean skip=false;
+    public static void setSkip(boolean s){
+        skip=s;
+    }
+
 
     private static void writeToFile(String dat, String name) {
         File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/RnE/"+name+".txt");
@@ -66,19 +71,28 @@ public class WriteHelper {
         }
     }*/
 
-    public static void writeToFile(Printable[] dat, String name) {
+    public static void writeToFileAsyncFast(double[] dat, String name, boolean symmetric){
+        double[] saveData=new double[dat.length];
+
+    }
+
+    public static void forceWriteToFileAsync(Printable[] dat, String name) {
         StringBuilder sb=new StringBuilder();
-            for (int i = 0; i < dat.length; i++) {
-                sb.append(""+i+"\t"+dat[i].debugPrint());
-            }
+        for (int i = 0; i < dat.length; i++) {
+            sb.append(""+i+"\t"+dat[i].debugPrint());
+        }
 
         writeToFileAsync(sb.toString(),name);
     }
 
-    public static void writeToFile(double[] dat, String name, boolean symmetric) {
+    public static void writeToFileAsync(Printable[] dat, String name) {
+        if (!skip) forceWriteToFileAsync(dat,name);
+    }
+
+    public static void forceWriteToFileAsync(double[] dat, String name, boolean symmetric) {
         StringBuilder sb=new StringBuilder();
         for (int i = 0; i < dat.length; i++) {
-            if (symmetric) {
+            if (!symmetric) {
                 sb.append("" + i + "\t" + dat[i] + "\n");
             }else{
                 sb.append("" + i + "\t" + dat[i]+ "\t" + (-dat[i]) + "\n");
@@ -87,6 +101,10 @@ public class WriteHelper {
 
         writeToFileAsync(sb.toString(),name);
     }
+
+    public static void writeToFileAsync(double[] dat, String name, boolean symmetric) {
+        if (!skip) forceWriteToFileAsync(dat,name,symmetric);
+    }
 /*
     private static void writeToFileAsync(Printable[] dat, String name) {
         final Printable[] dat_=dat;
@@ -94,28 +112,35 @@ public class WriteHelper {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                writeToFile(dat_,name_);
+                writeToFileAsync(dat_,name_);
             }
         }).start();
     }
 */
+public static void forceWriteToFileAsync(String dat, String name) {
+    final String dat_=dat;
+    final String name_=name;
+    new Thread(new Runnable() {
+        @Override
+        public void run() {
+            startAsync();
+            writeToFile(dat_,name_);
+            endAsync();
+        }
+    }).start();
+}
     public static void writeToFileAsync(String dat, String name) {
-        final String dat_=dat;
-        final String name_=name;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startAsync();
-                writeToFile(dat_,name_);
-                endAsync();
-            }
-        }).start();
+        if (!skip) forceWriteToFileAsync(dat,name);
+
     }
 
-    public static void writeToFile(Printable dat, String name) {
-        writeToFile(new Printable[]{dat},name);
-    }
+    public static void forceWriteToFileAsync(Printable dat, String name) {
 
+        writeToFileAsync(new Printable[]{dat},name);
+    }
+    public static void writeToFileAsync(Printable dat, String name) {
+        if (!skip) forceWriteToFileAsync(dat,name);
+    }
 
 
 

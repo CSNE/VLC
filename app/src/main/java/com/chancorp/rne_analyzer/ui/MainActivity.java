@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         writing=(TextView)findViewById(R.id.textView3);
 
         WriteHelper.setAsyncListener(this);
+        //WriteHelper.setSkip(true);
     }
 
     @Override

@@ -48,7 +48,7 @@ public class PeakBlock implements Printable {
 
         Log2.log(2,this,"Removed "+n+" trailing bits.");
 
-        WriteHelper.writeToFile(wp,"d1_"+ DataOperations.colorCode(colorCode)+"_Data_Acquisition");
+        WriteHelper.writeToFileAsync(wp,"d1_"+ DataOperations.colorCode(colorCode)+"_Data_Acquisition");
 
         return dat;
     }

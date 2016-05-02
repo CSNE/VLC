@@ -9,7 +9,7 @@ public class EC { //Experiment Constants
     public static double BLOCK_DELAY=1.5;
     public static double ROLLING_TIME=31.9;
     public static int IMAGE_HEIGHT=2448;
-    public static double TOO_CLOSE=0.3;
+    public static double TOO_CLOSE=0.5;
     public static double TOO_ZERO=1.5;
     public static int STD_DEVIATION_RANGE=500;
     public static double millisecToPixels(double millisec){

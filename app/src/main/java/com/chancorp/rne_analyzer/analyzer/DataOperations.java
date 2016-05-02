@@ -1,6 +1,7 @@
 package com.chancorp.rne_analyzer.analyzer;
 
 import com.chancorp.rne_analyzer.data.Pixel;
+import com.chancorp.rne_analyzer.helper.Log2;
 
 /**
  * Created by Chan on 3/30/2016.
@@ -42,7 +43,7 @@ public class DataOperations {
         else if (type==AVERAGE) return "AVG";
         else return "?";
     }
-    public static double stdDeviation(double[] dat, int from, int to){
+    private static double stdDeviation(double[] dat, int from, int to){
         double avg=average(dat);
         double varianceSum=0;
         for (int i = from; i <= to; i++) {
@@ -61,6 +62,52 @@ public class DataOperations {
             if (end>=dat.length) end=dat.length-1;
 
             res[i]=stdDeviation(dat,start,end);
+        }
+        return res;
+    }
+    public static Pixel[] lowPassOptimized(Pixel[] px, int lowpassSize){
+        Log2.log(1,PixelOperations.class,"Lowpass Filtering...",lowpassSize, px.length);
+
+        //Fast Rolling Average
+
+        Pixel[] res=new Pixel[px.length];
+        Pixel current=new Pixel();
+        int pixelsAdded=0;
+
+        //Initial Data
+        for (int i = 0; i < lowpassSize; i++) {
+            current.addSelf(px[i]);
+            pixelsAdded++;
+        }
+
+
+        for (int i = 0; i < px.length; i++) {
+            try{
+                current.addSelf(px[i+lowpassSize]);
+                pixelsAdded++;
+            }catch(ArrayIndexOutOfBoundsException e){}
+
+            try{
+                current.subSelf(px[i-lowpassSize]);
+                pixelsAdded--;
+            }catch(ArrayIndexOutOfBoundsException e){}
+            //Log2.log(1,PixelOperations.class,i,pixelsAdded);
+            res[i]=current.div(pixelsAdded);
+        }
+        return res;
+    }
+    public static double[] localizedStdDeviationFast(double[] dat, int size){
+        double[] res=new double[dat.length];
+
+        double varianceSum, pixelSum;
+        int numSum=0;
+
+        for (int i = 0; i < size; i++) {
+
+        }
+
+        for (int i = 0; i < res.length; i++) {
+
         }
         return res;
     }

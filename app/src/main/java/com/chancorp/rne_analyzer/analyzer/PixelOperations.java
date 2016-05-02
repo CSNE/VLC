@@ -14,7 +14,7 @@ import java.util.List;
 
 public class PixelOperations {
 
-    public static Pixel[] feedData(Bitmap bmp){
+    public static Pixel[] averageRows(Bitmap bmp){
         int w=bmp.getWidth(),
                 h=bmp.getHeight();
 
@@ -23,6 +23,9 @@ public class PixelOperations {
 
         double r,g,b;
         int clr;
+        int[] data=new int[w*h];
+        bmp.getPixels(data, 0, w, 0, 0, w, h);
+        bmp=null;
         for (int y = 0; y < h; y++) {
 
             r=0;
@@ -30,7 +33,8 @@ public class PixelOperations {
             b=0;
             for (int x = 0; x < w; x++) {
                 //if (x%5!=0) continue;
-                clr=bmp.getPixel(x,y);
+                //clr=bmp.getPixel(x,y);
+                clr=data[x + y * w];
                 r+= Color.red(clr)/255.0;
                 g+=Color.green(clr)/255.0;
                 b+=Color.blue(clr)/255.0;
@@ -56,25 +60,50 @@ public class PixelOperations {
         Pixel[] res=new Pixel[px.length];
         Pixel current;
         for (int i = 0; i < px.length; i++) {
-            //Log2.log(0,PixelOperations.class,"On Pixel", i);
             current=new Pixel();
             int num=0;
-            //Log2.log(0,PixelOperations.class,"What");
             for (int j = i-lowpassSize; j <= i+lowpassSize; j++) {
                 if(j<0 || j>=px.length){
-                    //Log2.log(0,PixelOperations.class,"Skipping Pixel", j, current.r, num);
                     continue;
                 }
                 else{
-                    //Log2.log(0,PixelOperations.class,"Adding Pixel", j, current.r, px[j].r, num);
                     current=current.add(px[j]);
                     num+=1;
                 }
             }
-
             res[i]=current.div(num);
+        }
+        return res;
+    }
 
-            //Log2.log(0,PixelOperations.class,"res",res[i].r);
+    public static Pixel[] lowPassOptimized(Pixel[] px, int lowpassSize){ //TODO
+        Log2.log(1,PixelOperations.class,"Lowpass Filtering...",lowpassSize, px.length);
+
+        //Fast Rolling Average
+
+        Pixel[] res=new Pixel[px.length];
+        Pixel current=new Pixel();
+        int pixelsAdded=0;
+
+        //Initial Data
+        for (int i = 0; i < lowpassSize; i++) {
+            current.addSelf(px[i]);
+            pixelsAdded++;
+        }
+
+
+        for (int i = 0; i < px.length; i++) {
+            try{
+                current.addSelf(px[i+lowpassSize]);
+                pixelsAdded++;
+            }catch(ArrayIndexOutOfBoundsException e){}
+
+            try{
+                current.subSelf(px[i-lowpassSize]);
+                pixelsAdded--;
+            }catch(ArrayIndexOutOfBoundsException e){}
+            //Log2.log(1,PixelOperations.class,i,pixelsAdded);
+            res[i]=current.div(pixelsAdded);
         }
         return res;
     }
