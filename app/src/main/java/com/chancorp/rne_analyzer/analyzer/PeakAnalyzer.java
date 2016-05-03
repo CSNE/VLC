@@ -79,6 +79,8 @@ public class PeakAnalyzer {
             }
         }
 
+
+
         WriteHelper.writeToFileAsync(blocks.toArray(new PeakBlock[blocks.size()]), "p3_"+DataOperations.colorCode(colorCode)+"_ValidBlocks");
         return blocks.get(0);
 

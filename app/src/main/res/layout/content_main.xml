@@ -15,62 +15,168 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"></FrameLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\???"
-        android:id="@+id/textView3"
-        android:layout_centerHorizontal="true"
-        android:textSize="24sp"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
         android:layout_toRightOf="@+id/frame"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentTop="true" />
+        android:layout_above="@+id/buttons">
 
-    <TextView
-        android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/frame"
+            android:layout_above="@+id/cap_btn"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\???"
+                android:id="@+id/textView3"
+                android:layout_centerHorizontal="true"
+                android:textSize="24sp"
+                android:layout_toRightOf="@+id/frame"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\???"
+                android:id="@+id/textView4"
+                android:layout_centerHorizontal="true"
+                android:textSize="24sp"
+                android:layout_toRightOf="@+id/frame"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="false"
+                android:layout_below="@+id/textView3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\???"
+                android:id="@+id/textView"
+                android:layout_centerHorizontal="true"
+                android:textSize="24sp"
+                android:layout_toRightOf="@+id/frame"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="false"
+                android:layout_below="@+id/textView4" />
+
+            <ScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/scrollView"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="false"
+                android:layout_below="@+id/textView"
+                android:layout_alignLeft="@+id/textView"
+                android:layout_above="@+id/cap_btn">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\???"
+                    android:id="@+id/textView2"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="24sp"
+
+                    android:layout_above="@+id/cap_btn" />
+            </ScrollView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/scrollView2"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="false"
+                android:layout_below="@+id/textView"
+                android:layout_alignLeft="@+id/textView"
+                android:layout_above="@+id/cap_btn"
+                android:layout_weight="1">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\???"
+                    android:id="@+id/block_data"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="24sp"
+
+                    android:layout_above="@+id/cap_btn" />
+            </ScrollView>
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/scrollView3"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentTop="false"
+                android:layout_below="@+id/textView"
+                android:layout_alignLeft="@+id/textView"
+                android:layout_above="@+id/cap_btn"
+                android:layout_weight="1">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\???"
+                    android:id="@+id/block_binary"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="24sp"
+
+                    android:layout_above="@+id/cap_btn" />
+            </ScrollView>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="\???"
-        android:id="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:textSize="24sp"
-        android:layout_toRightOf="@+id/frame"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentTop="false"
-        android:layout_below="@+id/textView3" />
-
-    <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentTop="false"
-        android:layout_below="@+id/textView"
-        android:layout_alignLeft="@+id/textView"
-        android:layout_above="@+id/cap_btn">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="\???"
-            android:id="@+id/textView2"
-            android:layout_centerHorizontal="true"
-            android:textSize="24sp"
-
-            android:layout_above="@+id/cap_btn" />
-    </ScrollView>
-
-
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Capture"
-        android:id="@+id/cap_btn"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/frame"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:id="@+id/buttons">
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Single-Block"
+            android:id="@+id/cap_btn"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/frame"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="1" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Multi-Block"
+            android:id="@+id/multi_btn"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/frame"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="1" />
+    </LinearLayout>
 
 </RelativeLayout>

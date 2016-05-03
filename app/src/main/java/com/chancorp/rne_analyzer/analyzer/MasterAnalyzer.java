@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 
 import com.chancorp.rne_analyzer.data.Bits;
+import com.chancorp.rne_analyzer.data.Block;
 import com.chancorp.rne_analyzer.data.Peak;
 import com.chancorp.rne_analyzer.data.PeakBlock;
 import com.chancorp.rne_analyzer.helper.BytesReader;
@@ -14,6 +15,7 @@ import com.chancorp.rne_analyzer.helper.Log2;
 import com.chancorp.rne_analyzer.helper.LogLogger;
 import com.chancorp.rne_analyzer.helper.Timer;
 import com.chancorp.rne_analyzer.helper.WriteHelper;
+import com.chancorp.rne_analyzer.ui.MainActivity;
 
 import java.io.File;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.List;
  * Created by Chan on 4/23/2016.
  */
 public class MasterAnalyzer {
-    public static Bits analyze(File source){
+    public static Block analyze(File source, MainActivity ma){
         LogLogger ll=new LogLogger();
         Log2.addLogListener(ll);
 
@@ -42,6 +44,7 @@ public class MasterAnalyzer {
             Log2.log(1, MasterAnalyzer.class, "Exif Parsed!");
 
             String et=ei.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+            ma.setExpTimeVal(et);
             Log2.log(1, MasterAnalyzer.class, "Exposure Time: "+et);
         } catch (Exception e) {
             ErrorLogger.log(e);
@@ -62,10 +65,10 @@ public class MasterAnalyzer {
 
         Log2.log(2,MasterAnalyzer.class,"Analysis complete!",(System.currentTimeMillis()-start)/1000.0f);
         Log2.removeLogListener(ll);
-        WriteHelper.forceWriteToFileAsync(ll.flush(),"Log");
-        WriteHelper.forceWriteToFileAsync(Timer.dumpResults(),"Timer");
+        WriteHelper.writeToFileAsync(ll.flush(),"Log");
+        WriteHelper.writeToFileAsync(Timer.dumpResults(),"Timer");
         ll=null;
-        return b;
+        return new Block(b);
     }
 
     public static Bits channelAnalyze(ImageAnalyzer ia, int colorCode){

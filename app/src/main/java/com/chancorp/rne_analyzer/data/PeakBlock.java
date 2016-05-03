@@ -1,6 +1,7 @@
 package com.chancorp.rne_analyzer.data;
 
 import com.chancorp.rne_analyzer.analyzer.DataOperations;
+import com.chancorp.rne_analyzer.helper.EC;
 import com.chancorp.rne_analyzer.helper.Log2;
 import com.chancorp.rne_analyzer.helper.Printable;
 import com.chancorp.rne_analyzer.helper.WriteHelper;
@@ -21,7 +22,7 @@ public class PeakBlock implements Printable {
         groups.add(pg);
     }
     public int getBlockSize(){
-        return groups.size();
+        return groups.get(groups.size()-1).getEndPixel()-groups.get(0).getStartPixel();
     }
 
     public boolean verifySymmetry(){
@@ -41,9 +42,13 @@ public class PeakBlock implements Printable {
         }
 
         int n=0;
-        while (dat.size()%8!=0){
+        while (dat.size()> EC.BITS_PER_BLOCK_CHANNEL){
             n++;
             dat.remove(dat.size()-1);
+        }
+
+        if (dat.size()<EC.BITS_PER_BLOCK_CHANNEL){
+            Log2.log(3,this,"Bits per block mismatch.");
         }
 
         Log2.log(2,this,"Removed "+n+" trailing bits.");

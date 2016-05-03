@@ -9,4 +9,7 @@
         app:showAsAction="never" />
     <item android:id="@+id/db_1" android:title="Load Last"/>
     <item android:id="@+id/db_2" android:title="Load Reference Image"/>
+    <item android:id="@+id/db_3" android:title="Verbose Logging ON"/>
+    <item android:id="@+id/db_4" android:title="Verbose Logging OFF"/>
+    <item android:id="@+id/db_5" android:title="Reset BlockArray"/>
 </menu>

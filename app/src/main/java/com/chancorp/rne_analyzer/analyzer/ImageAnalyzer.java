@@ -79,7 +79,7 @@ public class ImageAnalyzer {
         Timer.endTimer("PixelToDouble"+DataOperations.colorCode(colorCode));
         Timer.startTimer("StdDeviation"+DataOperations.colorCode(colorCode));
         //double stdDeviation=DataOperations.stdDeviation(dat);
-        double[] stdDeviations=DataOperations.localizedStdDeviation(dat,EC.STD_DEVIATION_RANGE);
+        double[] stdDeviations=DataOperations.localizedStdDeviation(dat,EC.STD_DEVIATION_RANGE,true);
         //Log2.log(2, this, "SDev: " + stdDeviation);
         Timer.endTimer("StdDeviation"+DataOperations.colorCode(colorCode));
         Timer.startTimer("Get peak candidates"+DataOperations.colorCode(colorCode));

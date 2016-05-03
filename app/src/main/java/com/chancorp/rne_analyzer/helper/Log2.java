@@ -15,6 +15,10 @@ public class Log2 {
         if (callingClass!=null) log(level,callingClass.getClass(), arguments);
         else log(level,null, arguments);
     }
+    public static void logAlt(int level,Object callingClass,Object... arguments){
+        if (callingClass!=null) logAlt(level,callingClass.getClass(), arguments);
+        else logAlt(level,null, arguments);
+    }
     static ArrayList<LogListener> lls=new ArrayList<>();
     public static void addLogListener(LogListener ll){
         lls.add(ll);
@@ -28,6 +32,12 @@ public class Log2 {
         lls.remove(ll);
     }
     public static void log(int level,Class callingClass,Object... arguments){
+        log(LOG_TAG,level,callingClass,arguments);
+    }
+    public static void logAlt(int level,Class callingClass,Object... arguments){
+        log(LOG_TAG+"_ALT",level,callingClass,arguments);
+    }
+    private static void log(String tag,int level,Class callingClass,Object... arguments){
         StringBuilder log=new StringBuilder();
         log.append("[From ");
         if (callingClass!=null) log.append(callingClass.getSimpleName());
@@ -44,23 +54,23 @@ public class Log2 {
 
         switch (level){
             case 0:
-                Log.v(LOG_TAG, log.toString());
+                Log.v(tag, log.toString());
                 notifyLogListeners("[VERBOSE] "+log.toString());
                 break;
             case 1:
-                Log.d(LOG_TAG,log.toString());
+                Log.d(tag,log.toString());
                 notifyLogListeners("[DEBUG] "+log.toString());
                 break;
             case 2:
-                Log.i(LOG_TAG,log.toString());
+                Log.i(tag,log.toString());
                 notifyLogListeners("[INFORMATION] "+log.toString());
                 break;
             case 3:
-                Log.w(LOG_TAG,log.toString());
+                Log.w(tag,log.toString());
                 notifyLogListeners("[WARNING] "+log.toString());
                 break;
             case 4:
-                Log.e(LOG_TAG,log.toString());
+                Log.e(tag,log.toString());
                 notifyLogListeners("[ERROR] "+log.toString());
                 break;
         }

@@ -13,12 +13,26 @@ public class Bits implements Printable{
     public Bits(List<Boolean> bits){
         this.bits =new ArrayList<>(bits);
     }
+    public Bits(){
+        this.bits=new ArrayList<>();
+    }
 
     public void append(List<Boolean> bits){
         this.bits.addAll(bits);
     }
     public void append(Bits bits){
         append(bits.bits);
+    }
+
+    public Bits subBits(int start, int end){
+        return new Bits(bits.subList(start,end));
+    }
+
+    public int getSize(){
+        return bits.size();
+    }
+    public boolean getBitAt(int i){
+        return bits.get(i);
     }
 
     public byte[] toByteArray() {

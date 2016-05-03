@@ -51,7 +51,7 @@ public class DataOperations {
         }
         return Math.sqrt(varianceSum/dat.length);
     }
-    public static double[] localizedStdDeviation(double[] dat, int size){
+    public static double[] localizedStdDeviation(double[] dat, int size, boolean normalize){
         double[] res=new double[dat.length];
         int start, end;
         for (int i = 0; i < res.length; i++) {
@@ -61,7 +61,7 @@ public class DataOperations {
             end=i+size;
             if (end>=dat.length) end=dat.length-1;
 
-            res[i]=stdDeviation(dat,start,end);
+            res[i]=stdDeviation(dat,start,end)*2*size/(end-start);
         }
         return res;
     }
