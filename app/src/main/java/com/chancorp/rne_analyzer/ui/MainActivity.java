@@ -27,37 +27,37 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, WriteHelper.AsyncListener{
-    /** A safe way to get an instance of the Camera object. */
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, WriteHelper.AsyncListener {
+    /**
+     * A safe way to get an instance of the Camera object.
+     */
 
     CameraPreview mPreview;
     Camera mCamera;
 
-    BlockArray ba=new BlockArray();
+    BlockArray ba = new BlockArray();
 
     File captured, reference;
 
-    TextView binary, utf8,writing, expTime, blockData, blockBinary;
+    TextView binary, utf8, writing, expTime, blockData, blockBinary;
 
 
+    boolean continueousCaptureMode = false, gotFirstBlock = false;
 
 
-    boolean continueousCaptureMode =false, gotFirstBlock=false;
-    int blocksAcquired=0;
-
-    public static Camera getCameraInstance(){
+    public static Camera getCameraInstance() {
         Camera c = null;
         try {
             c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             // Camera is not available (in use or does not exist)
         }
         return c; // returns null if camera is unavailable
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log2.log(2,this,"NEW INSTANCE!");
+        Log2.log(2, this, "NEW INSTANCE!");
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         super.onCreate(savedInstanceState);
@@ -67,18 +67,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ((Button) findViewById(R.id.cap_btn)).setOnClickListener(this);
         ((Button) findViewById(R.id.multi_btn)).setOnClickListener(this);
+        ((Button) findViewById(R.id.multi_stop)).setOnClickListener(this);
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
 
+        Camera.Parameters params = mCamera.getParameters();
 
-        Camera.Parameters params=mCamera.getParameters();
-
-        Log2.log(2,this,"Supported Exposure Modes:" + params.get("exposure-mode-values"));
-        Log2.log(2,this,"Supported White Balance Modes:" + params.get("whitebalance-values"));
+        Log2.log(2, this, "Supported Exposure Modes:" + params.get("exposure-mode-values"));
+        Log2.log(2, this, "Supported White Balance Modes:" + params.get("whitebalance-values"));
         params.set("whitebalance", "cloudy-daylight");
-        params.setPictureSize(3264,2448);
-        params.setPreviewSize(640,480);
+        params.setPictureSize(3264, 2448);
+        params.setPreviewSize(640, 480);
         mCamera.setParameters(params);
 
         // Create our Preview view and set it as the content of our activity.
@@ -86,16 +86,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         FrameLayout preview = (FrameLayout) findViewById(R.id.frame);
         preview.addView(mPreview);
 
-        captured =new File(Environment.getExternalStorageDirectory(),"CAP.jpeg");
-        reference =new File(Environment.getExternalStorageDirectory(),"REF.jpg");
+        captured = new File(Environment.getExternalStorageDirectory(), "CAP.jpeg");
+        reference = new File(Environment.getExternalStorageDirectory(), "REF.jpg");
 
-        binary=(TextView) findViewById(R.id.textView2);
-        utf8=(TextView) findViewById(R.id.textView);
-        writing=(TextView)findViewById(R.id.textView3);
-        expTime=(TextView)findViewById(R.id.textView4);
+        binary = (TextView) findViewById(R.id.textView2);
+        utf8 = (TextView) findViewById(R.id.textView);
+        writing = (TextView) findViewById(R.id.textView3);
+        expTime = (TextView) findViewById(R.id.textView4);
 
-        blockBinary=(TextView) findViewById(R.id.block_binary);
-        blockData=(TextView) findViewById(R.id.block_data);
+        //blockBinary = (TextView) findViewById(R.id.block_binary);
+        blockData = (TextView) findViewById(R.id.block_data);
 
         WriteHelper.setAsyncListener(this);
         //WriteHelper.setSkip(true);
@@ -118,58 +118,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        }else if (id == R.id.db_1) {
+        } else if (id == R.id.db_1) {
             startAsyncAnalysis(captured);
-        }else if (id == R.id.db_2) {
+        } else if (id == R.id.db_2) {
             startAsyncAnalysis(reference);
-        }else if (id == R.id.db_3) {
+        } else if (id == R.id.db_3) {
             WriteHelper.setSkip(false);
-        }else if (id == R.id.db_4) {
+        } else if (id == R.id.db_4) {
             WriteHelper.setSkip(true);
-        }else if (id == R.id.db_5) {
+        } else if (id == R.id.db_5) {
             ba.reset();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void startAsyncAnalysis(File f){
+    private void startAsyncAnalysis(File f) {
 
-        final File f_=f;
+        final File f_ = f;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 resetDisplay();
-                Block data=MasterAnalyzer.analyze(f_,MainActivity.this);
+                Block data = MasterAnalyzer.analyze(f_, MainActivity.this);
 
-                if (continueousCaptureMode) {
-                    boolean newBlock=ba.addBlock(data);
-                    Log2.logAlt(2,this,"Got block.");
-                    if (newBlock){
-                        Log2.logAlt(2,this,"It's a new block!");
-                        blocksAcquired++;
-                    }
-                }
+                if (!data.verify()) {
+                    postToast( "Parity Check Failed!");
+                } else {
+                    postToast( "Got data!");
+                    if (continueousCaptureMode) {
+                        boolean newBlock = ba.addBlock(data);
+                        Log2.logAlt(2, this, "Got block.");
 
-                if (data.isFirstBlock()){
-                    if (gotFirstBlock){
-                        Log2.logAlt(2,this,"First Block Acquired.");
-                        if (blocksAcquired>1) {
-                            Log2.logAlt(2,this,"BlocksAquired>1. Breaking.");
-                            continueousCaptureMode = false; //We already have the first block. it looped; break.
+                        if (newBlock) {
+                            Log2.logAlt(2, this, "It's a new block!");
+
+                            if (data.isFirstBlock()) {
+                                if (gotFirstBlock) {
+                                    Log2.logAlt(2, this, "First Block Acquired.");
+                                    if (ba.getSize() > 1) {
+                                        Log2.logAlt(2, this, "BlocksAquired>1. Breaking.");
+                                        continueousCaptureMode = false; //We already have the first block. it looped; break.
+                                    }
+                                } else { //First block acquired for the first time.
+                                    Log2.logAlt(2, this, "First Block Acquired for the first time.");
+                                    ba.reset(); //Fresh start!
+                                    ba.addBlock(data);
+                                    gotFirstBlock = true; //We got the first block. good.
+                                }
+                            }
                         }
                     }
-                    else{ //First block acquired.
-                        Log2.logAlt(2,this,"First Block Acquired for the first time.");
-                        ba.reset(); //Fresh start!
-                        blocksAcquired=0;
-                        ba.addBlock(data);
-                        gotFirstBlock=true; //We got the first block. good.
-                    }
-                }
 
+                }
                 display(data);
-                Log2.log(2,this,"Analysis Time",OneTimeTimer.end()/1000.0f);
+
+                Log2.log(2, this, "Analysis Time", OneTimeTimer.end() / 1000.0f);
 
                 //End analysis. Start again.
                 if (continueousCaptureMode) captureAndAnalyze();
@@ -177,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }).start();
     }
 
-    private void resetDisplay(){
+    private void resetDisplay() {
         binary.post(new Runnable() {
             @Override
             public void run() {
@@ -187,8 +191,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    public void setExpTimeVal(String val){
-        final String val_=val;
+    private void postToast(String s){
+        final String s_=s;
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, s_, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void setExpTimeVal(String val) {
+        final String val_ = val;
         expTime.post(new Runnable() {
             @Override
             public void run() {
@@ -197,18 +211,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void display(Block data){
-        final Block data_=data;
+    private void display(Block data) {
+        final Block data_ = data;
         binary.post(new Runnable() {
             @Override
             public void run() {
-                binary.setText(data_.getBlockInformation().toString()+"\n"
-                        +data_.getData().toSplitString()+"\n"
-                        +data_.getParity().toString());
+                binary.setText(data_.getBlockInformation().toString() + "\n"
+                        + data_.getData().toSplitString() + "\n"
+                        + data_.getParity().toString());
                 utf8.setText(data_.getData().decodeString());
                 try {
                     blockData.setText(ba.getFullBits().decodeString());
-                }catch(BlockArray.UndecodableBlockException e){
+                } catch (BlockArray.UndecodableBlockException e) {
                     blockData.setText("Undecodable!");
                 }
             }
@@ -218,16 +232,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private void captureAndAnalyze(){
+    private void captureAndAnalyze() {
         OneTimeTimer.start();
         // get an image from the camera
-        mCamera.takePicture(null, new Camera.PictureCallback() {  //Raw Data
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                if (data == null) Toast.makeText(MainActivity.this, "NULL!", Toast.LENGTH_SHORT).show();
-                else Toast.makeText(MainActivity.this, "Length: " + data.length, Toast.LENGTH_SHORT).show();
-            }
-        }, null, new Camera.PictureCallback() { //JPEG data
+        mCamera.takePicture(null, null, null, new Camera.PictureCallback() { //JPEG data
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 Log2.log(1, this, "Picture Received!");
@@ -250,24 +258,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onStop(){
+    public void onStop() {
         mCamera.release();
         super.onStop();
-
     }
 
 
     @Override
-      public void onClick(View v) {
-        if (v.getId()==R.id.cap_btn) {
+    public void onClick(View v) {
+        if (v.getId() == R.id.cap_btn) {
             captureAndAnalyze();
-        }
-        else if (v.getId()==R.id.multi_btn) {
-            continueousCaptureMode=true;
-            gotFirstBlock=false;
-            blocksAcquired=0;
+        } else if (v.getId() == R.id.multi_btn) {
+            continueousCaptureMode = true;
+            gotFirstBlock = false;
             ba.reset();
             captureAndAnalyze();
+        }else if (v.getId() == R.id.multi_stop) {
+            continueousCaptureMode = false;
         }
 
     }

@@ -35,6 +35,33 @@ public class Block {
 
 
     public boolean verify(){
-        return false;
+        int evenSum=0, oddSum=0;
+        boolean checkFailed=false;
+        boolean evenParity, oddParity;
+
+        Bits body=new Bits(blockInfor);
+        body.append(data);
+
+        for (int i = 0; i < body.getSize(); i++) {
+            if (i%2==0){ //Even
+                evenSum+=body.getBitAt(i)?1:0;
+            }else{
+                oddSum+=body.getBitAt(i)?1:0;
+            }
+        }
+
+        evenParity=evenSum%2!=0;
+        oddParity=oddSum%2!=0;
+
+        if (parity.getBitAt(0) != evenParity){ //Even Parity
+           return false;
+        }
+        if (parity.getBitAt(1) != oddParity){ //Even Parity
+            return false;
+        }
+
+
+
+        return true;
     }
 }

@@ -17,9 +17,28 @@ public class BlockArray {
     public BlockArray(){
 
     }
+
+    public int getSize(){
+        return data.size();
+    }
+
     public boolean addBlock(Block b){ //Returns if the block added is a new block.
+
+        try{
+            if(this.data.get(this.data.size()-1).getBlockInformation().equals(b.getBlockInformation())) { //Same block
+                return false;
+            }
+        }catch(IndexOutOfBoundsException e ){
+
+        }
+
         this.data.add(b);
 
+        return true;
+
+
+
+        /*
         try{
             if(this.data.get(this.data.size()-1).isOddNumberedBlock()!=this.data.get(this.data.size()-2).isOddNumberedBlock()){
                 return true;
@@ -31,6 +50,7 @@ public class BlockArray {
         }catch(IndexOutOfBoundsException e ){
             return true;
         }
+        */
     }
     public Bits getFullBits() throws UndecodableBlockException{
         Bits res=new Bits();

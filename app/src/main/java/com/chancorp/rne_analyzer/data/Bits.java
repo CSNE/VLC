@@ -16,6 +16,9 @@ public class Bits implements Printable{
     public Bits(){
         this.bits=new ArrayList<>();
     }
+    public Bits(Bits b){
+        this(b.bits);
+    }
 
     public void append(List<Boolean> bits){
         this.bits.addAll(bits);
@@ -33,6 +36,14 @@ public class Bits implements Printable{
     }
     public boolean getBitAt(int i){
         return bits.get(i);
+    }
+
+    public boolean equals(Bits b){
+        if (b.getSize()!=this.getSize()) return false;
+        for (int i = 0; i < this.getSize(); i++) {
+            if (this.getBitAt(i)!=b.getBitAt(i)) return false;
+        }
+        return true;
     }
 
     public byte[] toByteArray() {
