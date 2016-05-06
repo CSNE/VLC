@@ -14,18 +14,28 @@ import java.util.List;
 
 public class PixelOperations {
 
-    public static Pixel[] averageRows(Bitmap bmp){
+    public static int[] bitmapToInts(Bitmap bmp){
+
         int w=bmp.getWidth(),
                 h=bmp.getHeight();
+
+        int[] data=new int[w*h];
+        bmp.getPixels(data, 0, w, 0, 0, w, h);
+        bmp=null;
+
+        return data;
+    }
+
+    public static Pixel[] averageRows(int[] data, int w, int h){
+
 
 
         Pixel[] pixels =new Pixel[h];
 
         double r,g,b;
         int clr;
-        int[] data=new int[w*h];
-        bmp.getPixels(data, 0, w, 0, 0, w, h);
-        bmp=null;
+
+
         for (int y = 0; y < h; y++) {
 
             r=0;
@@ -35,14 +45,13 @@ public class PixelOperations {
                 //if (x%5!=0) continue;
                 //clr=bmp.getPixel(x,y);
                 clr=data[x + y * w];
-                r+= Color.red(clr)/255.0;
-                g+=Color.green(clr)/255.0;
-                b+=Color.blue(clr)/255.0;
+                r+= Color.red(clr);
+                g+=Color.green(clr);
+                b+=Color.blue(clr);
             }
 
-            pixels[y]=new Pixel((r/(double)w),(g/(double)w),(b/(double)w));
+            pixels[y]=new Pixel((r/(double)w/255.0),(g/(double)w/255.0),(b/(double)w/255.0));
         }
-        bmp=null;
         return pixels;
     }
     public static Pixel[] transformColorSpace(Pixel[] px){

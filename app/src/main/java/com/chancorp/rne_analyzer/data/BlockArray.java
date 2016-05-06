@@ -2,11 +2,14 @@ package com.chancorp.rne_analyzer.data;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by Chan on 3/29/2016.
  */
 public class BlockArray {
+
     public static class UndecodableBlockException extends Exception{
         public UndecodableBlockException(String s){
             super(s);
@@ -33,6 +36,8 @@ public class BlockArray {
         }
 
         this.data.add(b);
+
+        Collections.sort(this.data,new Block.CustomComparator());
 
         return true;
 

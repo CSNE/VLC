@@ -19,12 +19,8 @@ public class ImageAnalyzer {
             derivativeLowpass,derivativeLowpassOpti, derivativeLowpassSubtracted, derivativeLowpassSubtractedMedian;
 
 
-    public ImageAnalyzer(Bitmap bmp){
-        Log2.log(1, this, "ImageAnalyzer Created: w=" + bmp.getWidth() + ", h=" + bmp.getHeight());
-        EC.IMAGE_HEIGHT=bmp.getHeight();
-        Timer.startTimer("Average Pixels");
-        averaged= PixelOperations.averageRows(bmp);
-        Timer.endTimer("Average Pixels");
+    public ImageAnalyzer(Pixel[] averaged){
+        this.averaged=averaged;
     }
 
     public void prepareData(){

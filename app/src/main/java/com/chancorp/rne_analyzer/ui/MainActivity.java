@@ -3,6 +3,7 @@ package com.chancorp.rne_analyzer.ui;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -21,6 +22,7 @@ import com.chancorp.rne_analyzer.helper.ErrorLogger;
 import com.chancorp.rne_analyzer.helper.Log2;
 import com.chancorp.rne_analyzer.R;
 import com.chancorp.rne_analyzer.helper.OneTimeTimer;
+import com.chancorp.rne_analyzer.helper.Timer;
 import com.chancorp.rne_analyzer.helper.WriteHelper;
 
 import java.io.File;
@@ -39,10 +41,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     File captured, reference;
 
-    TextView binary, utf8, writing, expTime, blockData, blockBinary;
+    TextView binary, utf8, write,threads, expTime, blockData, blockBinary;
+
+    //StringBuilder tempLog = new StringBuilder();
+
+    boolean directMode = false;
 
 
     boolean continueousCaptureMode = false, gotFirstBlock = false;
+    int numActiveThreads = 0;
 
 
     public static Camera getCameraInstance() {
@@ -90,15 +97,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         reference = new File(Environment.getExternalStorageDirectory(), "REF.jpg");
 
         binary = (TextView) findViewById(R.id.textView2);
-        utf8 = (TextView) findViewById(R.id.textView);
-        writing = (TextView) findViewById(R.id.textView3);
-        expTime = (TextView) findViewById(R.id.textView4);
+        utf8 = (TextView) findViewById(R.id.data_received_text);
+        write = (TextView) findViewById(R.id.write);
+        expTime = (TextView) findViewById(R.id.exp_time);
+        threads=(TextView) findViewById(R.id.threads);
 
         //blockBinary = (TextView) findViewById(R.id.block_binary);
         blockData = (TextView) findViewById(R.id.block_data);
 
         WriteHelper.setAsyncListener(this);
         //WriteHelper.setSkip(true);
+
+        Timer.setActiva(false);
     }
 
     @Override
@@ -115,70 +125,142 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.db_1) {
-            startAsyncAnalysis(captured);
+
+        if (id == R.id.db_1) {
+            startAsyncAnalysis(captured, null);
         } else if (id == R.id.db_2) {
-            startAsyncAnalysis(reference);
+            startAsyncAnalysis(reference, null);
         } else if (id == R.id.db_3) {
             WriteHelper.setSkip(false);
         } else if (id == R.id.db_4) {
             WriteHelper.setSkip(true);
         } else if (id == R.id.db_5) {
             ba.reset();
+        } else if (id == R.id.db_6) {
+            directMode = true;
+        } else if (id == R.id.db_7) {
+            directMode = false;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void startAsyncAnalysis(File f) {
+    Handler h = new Handler();
+    int delay = 4000; //milliseconds
 
+    private void startAnalysisLoop() {
+
+        h.postDelayed(new Runnable() {
+            public void run() {
+                if (continueousCaptureMode) {
+                    captureAndAnalyze();
+                }
+                h.postDelayed(this, delay);
+            }
+        }, delay);
+
+    }
+
+    public void incrementActiveThreads(){
+        numActiveThreads++;
+        threads.post(new Runnable() {
+            @Override
+            public void run() {
+                threads.setText(""+numActiveThreads);
+            }
+        });
+    }
+    public void decrementActiveThreads(){
+        numActiveThreads--;
+        threads.post(new Runnable() {
+            @Override
+            public void run() {
+                threads.setText(""+numActiveThreads);
+            }
+        });
+    }
+
+    private void startAsyncAnalysis(File f, byte[] b) {
+        final long capturedTime = System.currentTimeMillis();
         final File f_ = f;
+        final byte[] b_ = b;
         new Thread(new Runnable() {
             @Override
             public void run() {
+                incrementActiveThreads();
                 resetDisplay();
-                Block data = MasterAnalyzer.analyze(f_, MainActivity.this);
-
-                if (!data.verify()) {
-                    postToast( "Parity Check Failed!");
+                Block data = null;
+                if (f_ != null) {
+                    data = MasterAnalyzer.analyze(f_, MainActivity.this, new MasterAnalyzer.ExposureTimeCallback() {
+                        @Override
+                        public void callback(String exp) {
+                            //tempLog.append(exp);
+                        }
+                    }, capturedTime);
+                } else if (b_ != null) {
+                    data = MasterAnalyzer.analyze(b_, capturedTime);
                 } else {
-                    postToast( "Got data!");
-                    if (continueousCaptureMode) {
-                        boolean newBlock = ba.addBlock(data);
-                        Log2.logAlt(2, this, "Got block.");
+                    Log2.log(4, this, "StartAsyncAnalysis called but the File nor byte[] is not null!");
+                }
 
-                        if (newBlock) {
-                            Log2.logAlt(2, this, "It's a new block!");
+                if (data != null) {
+                    /*
+                    if (data.verify() &&
+                            (data.getData().decodeString().equals("Test") || data.getData().decodeString().equals("ASDF") || data.getData().decodeString().equals("What"))) {
 
-                            if (data.isFirstBlock()) {
-                                if (gotFirstBlock) {
-                                    Log2.logAlt(2, this, "First Block Acquired.");
-                                    if (ba.getSize() > 1) {
-                                        Log2.logAlt(2, this, "BlocksAquired>1. Breaking.");
+                        tempLog.append("\tSuccess\n");
+                    } else {
+                        tempLog.append("\tFail\n");
+                    }*/
+
+                    if (!data.verify()) {
+                        postToast("Parity Check Failed!");
+                    } else {
+                        postToast("Got data!");
+                        if (continueousCaptureMode) {
+                            boolean newBlock = ba.addBlock(data);
+                            Log2.logAlt(2, this, "Got block.");
+
+                            if (newBlock) {
+                                Log2.logAlt(2, this, "It's a new block!");
+
+                                if (data.isFirstBlock()) {
+                                    if (gotFirstBlock) {
+                                        Log2.logAlt(2, this, "First Block Acquired.");
+                                        if (ba.getSize() > 1) {
+                                            Log2.logAlt(2, this, "BlocksAquired>1. Breaking.");
+                                            continueousCaptureMode = false; //We already have the first block. it looped; break.
+                                        }
+                                    } else if (data.isSingleBlockMessage()) {
+                                        Log2.logAlt(2, this, "Single Block Message. Breaking.");
                                         continueousCaptureMode = false; //We already have the first block. it looped; break.
+                                    } else { //First block acquired for the first time.
+                                        Log2.logAlt(2, this, "First Block Acquired for the first time.");
+                                        ba.reset(); //Fresh start!
+                                        ba.addBlock(data);
+                                        gotFirstBlock = true; //We got the first block. good.
                                     }
-                                } else { //First block acquired for the first time.
-                                    Log2.logAlt(2, this, "First Block Acquired for the first time.");
-                                    ba.reset(); //Fresh start!
-                                    ba.addBlock(data);
-                                    gotFirstBlock = true; //We got the first block. good.
                                 }
                             }
                         }
+
                     }
 
+                    display(data);
                 }
-                display(data);
+                /*
+                else{
+                    tempLog.append("\tFail\n");
+                }*/
 
                 Log2.log(2, this, "Analysis Time", OneTimeTimer.end() / 1000.0f);
 
                 //End analysis. Start again.
-                if (continueousCaptureMode) captureAndAnalyze();
+                //if (continueousCaptureMode) captureAndAnalyze();
+                decrementActiveThreads();
             }
         }).start();
+
     }
 
     private void resetDisplay() {
@@ -191,8 +273,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void postToast(String s){
-        final String s_=s;
+    private void postToast(String s) {
+        final String s_ = s;
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -239,18 +321,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 Log2.log(1, this, "Picture Received!");
+                if (directMode) {
+                    startAsyncAnalysis(null, data);
+                } else {
+                    try {
 
-                try {
+                        FileOutputStream fos = new FileOutputStream(captured);
+                        fos.write(data);
+                        fos.close();
+                    } catch (Exception e) {
+                        ErrorLogger.log(e);
+                    }
+                    Log2.log(1, this, "Picture Saved!");
 
-                    FileOutputStream fos = new FileOutputStream(captured);
-                    fos.write(data);
-                    fos.close();
-                } catch (Exception e) {
-                    ErrorLogger.log(e);
+                    startAsyncAnalysis(captured, null);
                 }
-                Log2.log(1, this, "Picture Saved!");
-
-                startAsyncAnalysis(captured);
             }
         });
 
@@ -272,8 +357,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             continueousCaptureMode = true;
             gotFirstBlock = false;
             ba.reset();
-            captureAndAnalyze();
-        }else if (v.getId() == R.id.multi_stop) {
+            //captureAndAnalyze();
+            startAnalysisLoop();
+        } else if (v.getId() == R.id.multi_stop) {
             continueousCaptureMode = false;
         }
 
@@ -282,20 +368,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void asyncStarted() {
-        writing.post(new Runnable() {
+        write.post(new Runnable() {
             @Override
             public void run() {
-                writing.setText("Writing...");
+                write.setText("Writing...");
             }
         });
     }
 
     @Override
     public void asyncEnded() {
-        writing.post(new Runnable() {
+        write.post(new Runnable() {
             @Override
             public void run() {
-                writing.setText("Write Complete.");
+                write.setText("Write Complete.");
             }
         });
     }

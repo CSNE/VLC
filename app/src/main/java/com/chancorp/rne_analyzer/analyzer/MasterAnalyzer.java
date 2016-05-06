@@ -8,6 +8,7 @@ import com.chancorp.rne_analyzer.data.Bits;
 import com.chancorp.rne_analyzer.data.Block;
 import com.chancorp.rne_analyzer.data.Peak;
 import com.chancorp.rne_analyzer.data.PeakBlock;
+import com.chancorp.rne_analyzer.data.Pixel;
 import com.chancorp.rne_analyzer.helper.BytesReader;
 import com.chancorp.rne_analyzer.helper.EC;
 import com.chancorp.rne_analyzer.helper.ErrorLogger;
@@ -24,7 +25,11 @@ import java.util.List;
  * Created by Chan on 4/23/2016.
  */
 public class MasterAnalyzer {
-    public static Block analyze(File source, MainActivity ma){
+    public interface ExposureTimeCallback{
+        void callback(String exp);
+    }
+
+    public static Block analyze(byte[] data, long capturedTime){
         LogLogger ll=new LogLogger();
         Log2.addLogListener(ll);
 
@@ -32,31 +37,34 @@ public class MasterAnalyzer {
 
         Log2.log(2, MasterAnalyzer.class, ">>>Starting analysis...<<<");
 
-        Timer.startTimer("Read Bitmap to Bytearray");
-        byte[] data= BytesReader.readContentIntoByteArray(source);
 
-        Timer.endTimer("Read Bitmap to Bytearray");
-        Timer.startTimer("Read EXIF");
-        Log2.log(1, MasterAnalyzer.class, "Picture Loaded!",data.length);
-
-        try {
-            ExifInterface ei=new ExifInterface(source.getAbsolutePath());
-            Log2.log(1, MasterAnalyzer.class, "Exif Parsed!");
-
-            String et=ei.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
-            ma.setExpTimeVal(et);
-            Log2.log(1, MasterAnalyzer.class, "Exposure Time: "+et);
-        } catch (Exception e) {
-            ErrorLogger.log(e);
-        }
-        Timer.endTimer("Read EXIF");
         Timer.startTimer("Decode JPEG");
 
         Bitmap bmp=BitmapFactory.decodeByteArray(data, 0, data.length);
         Timer.endTimer("Decode JPEG");
 
-        ImageAnalyzer ia=new ImageAnalyzer(bmp);
+
+        //Memory
+        Log2.log(1, MasterAnalyzer.class, "ImageAnalyzer Created: w=" + bmp.getWidth() + ", h=" + bmp.getHeight());
+        EC.IMAGE_HEIGHT=bmp.getHeight();
+        Timer.startTimer("Average Pixels");
+        int[] imageraw=PixelOperations.bitmapToInts(bmp);
+        int w=bmp.getWidth();
+        int h=bmp.getHeight();
         bmp=null;
+        System.gc();
+
+        Pixel[] averaged= PixelOperations.averageRows(imageraw, w,h);
+        imageraw=null;
+        data=null;
+        System.gc();
+
+        Timer.endTimer("Average Pixels");
+        ImageAnalyzer ia=new ImageAnalyzer(averaged);
+
+
+
+
         ia.prepareData();
         ia.logData();
 
@@ -68,7 +76,40 @@ public class MasterAnalyzer {
         WriteHelper.writeToFileAsync(ll.flush(),"Log");
         WriteHelper.writeToFileAsync(Timer.dumpResults(),"Timer");
         ll=null;
-        return new Block(b);
+        try{
+            Block res=new Block(b, capturedTime);
+            return res;
+        }catch (IndexOutOfBoundsException e){
+            return null;
+        }
+    }
+
+    public static Block analyze(File source, MainActivity ma, ExposureTimeCallback etc, long capturedTime){
+
+        Timer.startTimer("Read EXIF");
+
+
+        String et="";
+        try {
+            ExifInterface ei=new ExifInterface(source.getAbsolutePath());
+            Log2.log(1, MasterAnalyzer.class, "Exif Parsed!");
+
+            et=ei.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+            etc.callback(et);
+            ma.setExpTimeVal(et);
+            Log2.log(1, MasterAnalyzer.class, "Exposure Time: "+et);
+        } catch (Exception e) {
+            ErrorLogger.log(e);
+        }
+
+        Timer.endTimer("Read EXIF");
+
+        Timer.startTimer("Read Bitmap to Bytearray");
+        byte[] data= BytesReader.readContentIntoByteArray(source);
+        Log2.log(1, MasterAnalyzer.class, "Picture Loaded!",data.length);
+        Timer.endTimer("Read Bitmap to Bytearray");
+
+        return analyze(data,capturedTime);
     }
 
     public static Bits channelAnalyze(ImageAnalyzer ia, int colorCode){

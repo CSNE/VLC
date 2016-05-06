@@ -1,18 +1,37 @@
 package com.chancorp.rne_analyzer.data;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by Chan on 3/29/2016.
  */
 public class Block {
+
+    public static class CustomComparator implements Comparator<Block> {
+        @Override // negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second.
+        public int compare(Block o1, Block o2) {
+
+            if (o1.timeCaptured<o2.timeCaptured) return -1;
+            else if (o1.timeCaptured==o2.timeCaptured) return 0;
+            else return 1;
+        }
+    }
+
+
     Bits raw;
     Bits blockInfor,data,parity; //Don't modifiy this.
-    public Block(Bits raw){
+
+    long timeCaptured;
+
+
+    public Block(Bits raw, long timeCaptured){
         this.raw=raw;
         this.blockInfor=raw.subBits(0,2);
         this.data=raw.subBits(2,raw.getSize()-2);
         this.parity=raw.subBits(raw.getSize()-2,raw.getSize());
+
+        this.timeCaptured=timeCaptured;
     }
 
     public Bits getData(){
@@ -27,6 +46,9 @@ public class Block {
 
     public boolean isFirstBlock(){
         return getBlockInformation().getBitAt(0);
+    }
+    public boolean isSingleBlockMessage(){
+        return getBlockInformation().getBitAt(0) && getBlockInformation().getBitAt(1);
     }
     public boolean isOddNumberedBlock(){
         return getBlockInformation().getBitAt(1);

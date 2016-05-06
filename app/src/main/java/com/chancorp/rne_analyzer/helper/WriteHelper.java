@@ -79,7 +79,7 @@ public class WriteHelper {
 
     }
 
-    private static void forceWriteToFileAsync(Printable[] dat, String name) {
+    public static void forceWriteToFileAsync(Printable[] dat, String name) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < dat.length; i++) {
             sb.append(i).append("\t").append(dat[i].debugPrint());
@@ -92,7 +92,7 @@ public class WriteHelper {
         if (!skip) forceWriteToFileAsync(dat, name);
     }
 
-    private static void forceWriteToFileAsync(double[] dat, String name, boolean symmetric) {
+    public static void forceWriteToFileAsync(double[] dat, String name, boolean symmetric) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < dat.length; i++) {
             if (!symmetric) {
@@ -121,7 +121,7 @@ public class WriteHelper {
             }).start();
         }
     */
-    private static void forceWriteToFileAsync(String dat, String name) {
+    public static void forceWriteToFileAsync(String dat, String name) {
         final String dat_ = dat;
         final String name_ = name;
         new Thread(new Runnable() {
@@ -139,7 +139,7 @@ public class WriteHelper {
 
     }
 
-    private static void forceWriteToFileAsync(Printable dat, String name) {
+    public static void forceWriteToFileAsync(Printable dat, String name) {
 
         writeToFileAsync(new Printable[]{dat}, name);
     }
